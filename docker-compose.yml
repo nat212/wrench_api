@@ -1,0 +1,26 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=wrench_api
+      - POSTGRES_USER=wrench_api
+      - POSTGRES_PASSWORD=wrench_api
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - wrench_db:/var/lib/postgresql/data
+
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=ecto://wrench_api:wrench_api@db:5432/wrench_api
+      - PORT=4000
+      - SECRET_KEY_BASE=7zoQqAnQNKJvES0FI5YfSGvkSV9IODXK8p1PzpqWt/XG1AlMxI77ffDA7+sfScZ3
+    ports:
+      - 127.0.0.1:4080:4000
+
+volumes:
+  wrench_db:
