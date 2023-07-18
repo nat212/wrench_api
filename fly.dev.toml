@@ -1,18 +1,18 @@
-# fly.toml app configuration file generated for wrench on 2023-07-18T15:41:22+02:00
+# fly.toml app configuration file generated for wrench-dev on 2023-07-18T16:54:49+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "wrench"
+app = "wrench-dev"
 primary_region = "jnb"
 kill_signal = "SIGTERM"
 
 [deploy]
   release_command = "/app/bin/migrate"
-  strategy = "bluegreen"
+  strategy = "immediate"
 
 [env]
-  PHX_HOST = "wrench.fly.dev"
+  PHX_HOST = "wrench-dev.fly.dev"
   PORT = "8080"
 
 [http_service]
@@ -21,7 +21,6 @@ kill_signal = "SIGTERM"
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
-  max_machines_running = 1
   processes = ["app"]
   [http_service.concurrency]
     type = "connections"
