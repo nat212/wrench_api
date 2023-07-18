@@ -9,7 +9,7 @@ kill_signal = "SIGTERM"
 
 [deploy]
   release_command = "/app/bin/migrate"
-  strategy = "immediate"
+  strategy = "bluegreen"
 
 [env]
   PHX_HOST = "wrench.fly.dev"
