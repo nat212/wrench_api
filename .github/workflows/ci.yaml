@@ -1,0 +1,97 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: ["develop"]
+  pull_request:
+    branches: ["develop"]
+
+env:
+  MIX_ENV: test
+  DB_USER: postgres
+  DB_PASSWORD: postgres
+  DB_DATABASE: wrench_api_test
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    services:
+      db:
+        image: postgres:14
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_DATABASE: ${{ env.DB_DATABASE }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    runs-on: ubuntu-20.04
+    name: Test on OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
+    strategy:
+      matrix:
+        otp: ['26']
+        elixir: ['1.15.3']
+
+    steps:
+      - name: Set up comeonin requirements
+        run: |
+          sudo apt update
+          sudo apt-get install -y build-essential
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Cache deps
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+          CACHE_NAME: cache-elixir-deps
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ env.CACHE_NAME }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.CACHE_NAME }}-
+      
+      - name: Cache compiled build
+        id: cache-build
+        uses: actions/cache@v3
+        env:
+          CACHE_NAME: cache-compiled-build
+        with:
+          path: _build
+          key: ${{ runner.os }}-mix-${{ env.CACHE_NAME }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.CACHE_NAME }}-
+            ${{ runner.os }}-mix-
+          
+      # Force full recompile on builds that are retried.
+      - name: Bust cache on build retry
+        if: github.run_attempt != '1'
+        run: |
+          mix deps.clean --all
+          mix clean
+        shell: sh
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Compile, treating warnings as errors
+        run: mix compile --warnings-as-errors
+
+      - name: Check formatting
+        run: mix format --check-formatted
+      
+      - name: Run tests
+        run: mix test
+        env:
+          DATABASE_URL: ecto://${{ env.DB_USER }}:${{ env.DB_PASSWORD }}@localhost:5432/${{ env.DB_DATABASE }}

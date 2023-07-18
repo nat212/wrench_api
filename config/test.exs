@@ -8,13 +8,11 @@ config :bcrypt_elixir, :log_rounds, 1
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :wrench_api, WrenchApi.Repo,
-  username: "wrench_api",
-  password: "wrench_api",
-  hostname: "localhost",
-  database: "wrench_api_test#{System.get_env("MIX_TEST_PARTITION")}",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+database_url =
+  System.get_env("DATABASE_URL") ||
+    "ecto://wrench_api:wrench_api:localhost:5432/wrench_api_test#{System.get_env("MIX_TEST_PARTITION")}"
+
+config :wrench_api, WrenchApi.Repo, url: database_url
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
