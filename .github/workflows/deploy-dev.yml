@@ -4,6 +4,18 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - .github/workflows/ci.yaml
+      - .github/workflows/deploy-prod.yaml
+      - .vscode/**/*
+      - test/**/*
+      - .formatter.exs
+      - .gitignore
+      - README.md
+      - docker-compose.yml
+      - Makefile
+      - config/prod.exs
+      - config/test.exs
 
 jobs:
   deploy:
