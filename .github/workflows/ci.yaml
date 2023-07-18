@@ -5,6 +5,19 @@ on:
     branches: ["develop"]
   pull_request:
     branches: ["develop", "main"]
+    paths-ignore:
+      - .github/workflows/deploy-*.yml
+      - .vscode/**/*
+      - rel/**/*
+      - .dockerignore
+      - .gitignore
+      - docker-compose.yml
+      - Dockerfile
+      - fly.*.toml
+      - Makefile
+      - README.md
+      - config/dev.exs
+      - config/prod.exs
 
 env:
   MIX_ENV: test
